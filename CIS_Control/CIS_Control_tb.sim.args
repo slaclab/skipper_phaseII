@@ -1,0 +1,5 @@
+-clean
+-access +rwc
+-timescale 1ns/1ns
+CIS_Control_tb.sv
+CIS_Control.sv
