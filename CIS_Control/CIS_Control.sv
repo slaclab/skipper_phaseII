@@ -11,82 +11,150 @@
 // - Trigger becomes 'integration'. When active high, the CIS integrates signal
 //   in the pinned photodiode. On the falling edge, the pattern is executed.
 
-// Questions:
+// Todo:
+// - We need to separate integration and skipping, or we cannot skip > 10 sample.
+//   Two issues with pattern-based approach: integration->skipping transition,
+//   and RST
+// - Replace skipping signal with NUM_SKIP_SAMPLES input register, max 10k skip
 // - We need to signal FE/ADC when to sample baseline/value
-// - Where do we do CCD reset. At the beginning or at the end.
+// --> Add Phi1 and Phi2 to signal when we're sampling baseline and signal
+// - Build a FSM with 3 patterns: CCD_Reset, Integration, Skipping
+// -- Add CLK_DIV register to divide clock and duty-cycle to slow down this part
 
+
+// Notes:
+// Readout sequence is:
+// 1) CCD reset (12 clk cycles)
+// 2) Integration (Delayed by N clk cycles after integration)
+// 3) Skipper readout (minimum 1 cycle)
+
+//
 
 module CIS_Control
   #(
   parameter     NUM_SIGNALS = 10,
-  parameter     PATTERN_LEN = 100
+  parameter     PATTERN_LEN = 12
   ) (
   input   logic 					                              clk,
   input   logic 					                              reset,
+  input   logic [9:0]                                   clk_div,
   input   logic 					                              integration,
-  input   logic                                         skipping,
-  input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_data,
-  output  logic [(NUM_SIGNALS-1):0] 			              signal,
-  output  logic 					                              running
+  input   logic [9:0]                                   skip_samples,
+  input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_ccd_reset,
+  input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_integration,
+  input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_skipping,
+  output  logic [(NUM_SIGNALS-1):0] 			              signal
   );
+
+
+  // -----------------------------------------------------------------------------
+  // --- Clock divider circuit
+  // --- Generates a clk_div_en pulse every 'clk_div' clk cycles
+
+  logic [9:0]  clk_div_cnt;
+  logic        clk_div_en;
+
+  always_ff @(posedge clk, posedge reset) begin
+      if (reset) begin
+        clk_div_cnt <= 1'b0;
+        clk_div_en  <= 1'b0;
+      end else begin
+        if (clk_div_cnt == clk_div) begin
+          clk_div_cnt  <= 8'b0;
+          clk_div_en   <= 1'b1; // Generate a pulse when counter reaches clk_div
+        end else begin
+          clk_div_cnt  <= clk_div_cnt + 1'b1;
+          clk_div_en   <= 1'b0;
+        end
+      end
+  end
+
+  // -----------------------------------------------------------------------------
+  // --- FSM for PGP framing
+
+  // FSM States
+  typedef enum logic [2:0] { IDLE, CCD_RESET, INTEGRATION, SKIPPING } state_t;
+  state_t state;
 
   logic last_inte;      //Value of trig last clk cycle.
   logic [15:0] 					counter;
+  logic [15:0] 					counter_skipping;
   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] 	pattern_buffer;
   genvar i;
 
-  //The 0th entry in the pattern buffer is what is sent out over signal first.
-  generate
-    for(i = 0; i < NUM_SIGNALS; i++) begin
-      always @(posedge clk, posedge reset) begin
-        if(reset) begin
-          running         <= 1'b0;
-          pattern_buffer  <= 0;
-          counter         <= 0;
-          last_inte       <= 1'b0;
-        end else begin
-          last_inte <= integration;
-          if(!running && !integration && last_inte) begin
-            // If the block is not running and we see a trigger falling edge,
-            // load the data and start running.
-            running        <= 1'b1;
-            pattern_buffer <= pattern_data;
-            counter        <= PATTERN_LEN;
-          end else if(running) begin
-            //If the block is running, each pattern advances by 1 bit.
-            if(counter > 0) begin
-              pattern_buffer[i] <= {1'b0,pattern_buffer[i][(PATTERN_LEN-1):1]};
-              counter <= counter-1;
+  always_ff @(posedge clk, posedge reset) begin
+    if (reset) begin
+      state             <= IDLE;
+      pattern_buffer    <= pattern_ccd_reset;
+      counter           <= 0;
+      last_inte         <= 1'b0;
+      counter_skipping  <= 0;
+    end else begin
+      if (clk_div_en) begin
+        case (state)
+          IDLE: begin
+            pattern_buffer <= pattern_ccd_reset;
+            counter        <= PATTERN_LEN-1;
+            if (integration) begin
+              state          <= CCD_RESET;
+            end else  begin
+              state          <= IDLE;
             end
-            else begin
-              if (skipping) begin
-                running <= 1'b1;
-                pattern_buffer <= pattern_data;
-                counter        <= PATTERN_LEN;
+          end
+          CCD_RESET: begin
+            if (counter > 0) begin
+              pattern_buffer    <= pattern_buffer << 1;
+              counter           <= counter-1;
+              state             <= CCD_RESET;
+            end else begin
+              pattern_buffer    <= pattern_integration;
+              counter           <= PATTERN_LEN-1;
+              state             <= INTEGRATION;
+            end
+          end
+          INTEGRATION: begin
+            if (counter > 0) begin
+              pattern_buffer    <= pattern_buffer << 1;
+              counter           <= counter-1;
+              state             <= INTEGRATION;
+            end else begin
+              pattern_buffer    <= pattern_skipping;
+              counter           <= PATTERN_LEN-1;
+              state             <= SKIPPING;
+              counter_skipping  <= skip_samples;
+            end
+          end
+          SKIPPING: begin
+            if (counter > 0) begin
+              pattern_buffer    <= pattern_buffer << 1;
+              counter           <= counter-1;
+              state             <= SKIPPING;
+            end else begin
+              // Repeat pattern 'skip_samples' times
+              if (counter_skipping > 0) begin
+                pattern_buffer    <= pattern_skipping;
+                counter           <= PATTERN_LEN-1;
+                state             <= SKIPPING;
+                counter_skipping  <= counter_skipping-1;
               end else begin
-                running <= 1'b0;
+                // At the end of the sequence, return in ccd_reset state
+                pattern_buffer    <= pattern_ccd_reset;
+                counter           <= 0;
+                state             <= IDLE;
+                counter_skipping  <= 0;
               end
-              //When counter == 0, stop running
             end
-          end // if (running)
-        end // else: !if(reset)
-      end // always @ (posedge clk, posedge reset)
-    end // for (i = 0; i < NUM_SIGNALS; i++)
-  endgenerate
-
-  // One signal needs to control the Photodiode RST
-  // Here we assign signal[0] = PDrst
-  // When PDrst = 0, charge is integrated in the pinned Photodiode
-
-  assign signal[0] = (running) ? pattern_buffer[0][0] : ~(integration | last_inte);
+          end
+        endcase
+      end // if (clk_div_en) begin
+    end // if !(reset )
+  end
 
   // Assign only signals from 1 to NUM_SIGNALS
   generate
-    for(i = 1; i < NUM_SIGNALS; i++) begin
-      assign signal[i] = pattern_buffer[i][0];
+    for(i = 0; i < NUM_SIGNALS; i++) begin
+      assign signal[i] = pattern_buffer[i][PATTERN_LEN-1];
     end
   endgenerate
-
-
 
 endmodule // CIS_Control

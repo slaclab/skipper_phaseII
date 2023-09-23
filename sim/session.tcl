@@ -1,23 +1,24 @@
 # Begin_DVE_Session_Save_Info
 # DVE full session
-# Saved on Fri Sep 22 08:05:48 2023
+# Saved on Fri Sep 22 17:30:36 2023
 # Designs open: 1
 #   Sim: simv
 # Toplevel windows open: 2
 # 	TopLevel.1
 # 	TopLevel.2
 #   Source.1: CIS_Control_tb
-#   Wave.1: 17 signals
-#   Group count = 2
-#   Group dut signal count = 11
-#   Group To CIS signal count = 6
+#   Wave.1: 25 signals
+#   Group count = 3
+#   Group dut signal count = 9
+#   Group dut_1 signal count = 18
+#   Group CIS signal count = 7
 # End_DVE_Session_Save_Info
 
 # DVE version: R-2020.12-1_Full64
 # DVE build date: Jan 28 2021 21:30:02
 
 
-#<Session mode="Full" path="/u1/lorenzor/skipper/sim/session.tcl" type="Debug">
+#<Session mode="Full" path="/u1/lorenzor/skipper_phaseII/sim/session.tcl" type="Debug">
 
 gui_set_loading_session_type Post
 gui_continuetime_set
@@ -69,7 +70,7 @@ if {![gui_exist_window -window TopLevel.1]} {
 } else { 
     set TopLevel.1 TopLevel.1
 }
-gui_show_window -window ${TopLevel.1} -show_state normal -rect {{121 142} {1868 1165}}
+gui_show_window -window ${TopLevel.1} -show_state normal -rect {{121 142} {1865 1162}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -116,23 +117,23 @@ gui_show_toolbar -toolbar {Testbench}
 # End ToolBar settings
 
 # Docked window settings
-set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 283]
+set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 280]
 catch { set Hier.1 [gui_share_window -id ${HSPane.1} -type Hier] }
-gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 283
+gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 280
 gui_set_window_pref_key -window ${HSPane.1} -key dock_height -value_type integer -value -1
 gui_set_window_pref_key -window ${HSPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 282} {height 747} {dock_state left} {dock_on_new_line true} {child_hier_colhier 209} {child_hier_coltype 100} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
-set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 332]
+gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 279} {height 747} {dock_state left} {dock_on_new_line true} {child_hier_colhier 209} {child_hier_coltype 100} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
+set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 329]
 catch { set Data.1 [gui_share_window -id ${DLPane.1} -type Data] }
-gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 332
+gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 329
 gui_set_window_pref_key -window ${DLPane.1} -key dock_height -value_type integer -value 747
 gui_set_window_pref_key -window ${DLPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 331} {height 747} {dock_state left} {dock_on_new_line true} {child_data_colvariable 190} {child_data_colvalue 100} {child_data_coltype 68} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
-set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 178]
+gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 328} {height 747} {dock_state left} {dock_on_new_line true} {child_data_colvariable 190} {child_data_colvalue 100} {child_data_coltype 68} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
+set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 175]
 gui_set_window_pref_key -window ${Console.1} -key dock_width -value_type integer -value 1748
-gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 178
+gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 175
 gui_set_window_pref_key -window ${Console.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 1747} {height 177} {dock_state bottom} {dock_on_new_line true}}
+gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 1744} {height 174} {dock_state bottom} {dock_on_new_line true}}
 #### Start - Readjusting docked view's offset / size
 set dockAreaList { top left right bottom }
 foreach dockArea $dockAreaList {
@@ -169,7 +170,7 @@ if {![gui_exist_window -window TopLevel.2]} {
 } else { 
     set TopLevel.2 TopLevel.2
 }
-gui_show_window -window ${TopLevel.2} -show_state normal -rect {{191 120} {2540 1463}}
+gui_show_window -window ${TopLevel.2} -show_state normal -rect {{191 120} {2537 1460}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -221,7 +222,7 @@ gui_sync_global -id ${TopLevel.2} -option true
 # MDI window settings
 set Wave.1 [gui_create_window -type {Wave}  -parent ${TopLevel.2}]
 gui_show_window -window ${Wave.1} -show_state maximized
-gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 682} {child_wave_right 1662} {child_wave_colname 339} {child_wave_colvalue 339} {child_wave_col1 0} {child_wave_col2 1}}
+gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 682} {child_wave_right 1659} {child_wave_colname 339} {child_wave_colvalue 339} {child_wave_col1 0} {child_wave_col2 1}}
 
 # End MDI window settings
 
@@ -242,8 +243,8 @@ gui_update_statusbar_target_frame ${TopLevel.2}
 # DVE Open design session: 
 
 if { [llength [lindex [gui_get_db -design Sim] 0]] == 0 } {
-gui_set_env SIMSETUP::SIMARGS {{-i ../simoptions.tcl}}
-gui_set_env SIMSETUP::SIMEXE {./simv}
+gui_set_env SIMSETUP::SIMARGS {{ -i ../simoptions.tcl -ucligui}}
+gui_set_env SIMSETUP::SIMEXE {simv}
 gui_set_env SIMSETUP::ALLOW_POLL {0}
 if { ![gui_is_db_opened -db {simv}] } {
 gui_sim_run Ucli -exe simv -args { -i ../simoptions.tcl -ucligui} -dir ../build -nosource
@@ -275,23 +276,27 @@ set _session_group_1 dut
 gui_sg_create "$_session_group_1"
 set dut "$_session_group_1"
 
-gui_sg_addsignal -group "$_session_group_1" { CIS_Control_tb.dut.reset CIS_Control_tb.dut.pattern_buffer CIS_Control_tb.dut.last_inte CIS_Control_tb.dut.integration CIS_Control_tb.dut.PATTERN_LEN CIS_Control_tb.dut.NUM_SIGNALS CIS_Control_tb.dut.counter CIS_Control_tb.dut.clk CIS_Control_tb.dut.signal CIS_Control_tb.dut.running CIS_Control_tb.dut.pattern_data }
+gui_sg_addsignal -group "$_session_group_1" { CIS_Control_tb.dut.reset CIS_Control_tb.dut.pattern_buffer CIS_Control_tb.dut.last_inte CIS_Control_tb.dut.integration CIS_Control_tb.dut.PATTERN_LEN CIS_Control_tb.dut.NUM_SIGNALS CIS_Control_tb.dut.counter CIS_Control_tb.dut.clk CIS_Control_tb.dut.signal }
 gui_set_radix -radix {decimal} -signals {Sim:CIS_Control_tb.dut.PATTERN_LEN}
 gui_set_radix -radix {twosComplement} -signals {Sim:CIS_Control_tb.dut.PATTERN_LEN}
 gui_set_radix -radix {decimal} -signals {Sim:CIS_Control_tb.dut.NUM_SIGNALS}
 gui_set_radix -radix {twosComplement} -signals {Sim:CIS_Control_tb.dut.NUM_SIGNALS}
 
-set _session_group_2 {To CIS}
+set _session_group_2 dut_1
 gui_sg_create "$_session_group_2"
-set {To CIS} "$_session_group_2"
+set dut_1 "$_session_group_2"
 
-gui_sg_addsignal -group "$_session_group_2" { CIS_Control_tb.CIS_PDrst CIS_Control_tb.CIS_TG1 CIS_Control_tb.CIS_TG2 CIS_Control_tb.CIS_SG CIS_Control_tb.CIS_OG CIS_Control_tb.CIS_DG }
-gui_set_color -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_PDrst}
-gui_set_color -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_TG1}
-gui_set_color -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_TG2}
-gui_set_color -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_SG}
-gui_set_color -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_OG}
-gui_set_color -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_DG}
+gui_sg_addsignal -group "$_session_group_2" { CIS_Control_tb.dut.skip_samples CIS_Control_tb.dut.reset CIS_Control_tb.dut.pattern_buffer CIS_Control_tb.dut.clk_div_en CIS_Control_tb.dut.clk_div CIS_Control_tb.dut.clk_div_cnt CIS_Control_tb.dut.counter_skipping CIS_Control_tb.dut.last_inte CIS_Control_tb.dut.integration CIS_Control_tb.dut.pattern_skipping CIS_Control_tb.dut.NUM_SIGNALS CIS_Control_tb.dut.PATTERN_LEN CIS_Control_tb.dut.state CIS_Control_tb.dut.clk CIS_Control_tb.dut.counter CIS_Control_tb.dut.pattern_integration CIS_Control_tb.dut.signal CIS_Control_tb.dut.pattern_ccd_reset }
+gui_set_radix -radix {decimal} -signals {Sim:CIS_Control_tb.dut.NUM_SIGNALS}
+gui_set_radix -radix {twosComplement} -signals {Sim:CIS_Control_tb.dut.NUM_SIGNALS}
+gui_set_radix -radix {decimal} -signals {Sim:CIS_Control_tb.dut.PATTERN_LEN}
+gui_set_radix -radix {twosComplement} -signals {Sim:CIS_Control_tb.dut.PATTERN_LEN}
+
+set _session_group_3 CIS
+gui_sg_create "$_session_group_3"
+set CIS "$_session_group_3"
+
+gui_sg_addsignal -group "$_session_group_3" { CIS_Control_tb.CIS_PDrst CIS_Control_tb.CIS_TG1 CIS_Control_tb.CIS_TG2 CIS_Control_tb.CIS_SG CIS_Control_tb.CIS_OG CIS_Control_tb.CIS_DG CIS_Control_tb.CIS_FG_RST }
 
 # Global: Highlighting
 
@@ -301,7 +306,7 @@ gui_change_stack_mode -mode list
 # Post database loading setting...
 
 # Restore C1 time
-gui_set_time -C1_only 50764
+gui_set_time -C1_only 50500
 
 
 
@@ -335,7 +340,7 @@ gui_list_set_filter -id ${Data.1} -list { {Buffer 1} {Input 1} {Others 1} {Linka
 gui_list_set_filter -id ${Data.1} -text {*}
 gui_list_show_data -id ${Data.1} {CIS_Control_tb}
 gui_show_window -window ${Data.1}
-catch { gui_list_select -id ${Data.1} {CIS_Control_tb.CIS_PDrst CIS_Control_tb.CIS_TG1 CIS_Control_tb.CIS_TG2 CIS_Control_tb.CIS_SG CIS_Control_tb.CIS_OG CIS_Control_tb.CIS_DG }}
+catch { gui_list_select -id ${Data.1} {CIS_Control_tb.CIS_SG CIS_Control_tb.CIS_TG1 CIS_Control_tb.CIS_TG2 CIS_Control_tb.CIS_DG CIS_Control_tb.CIS_FG_RST CIS_Control_tb.CIS_OG CIS_Control_tb.CIS_PDrst }}
 gui_view_scroll -id ${Data.1} -vertical -set 0
 gui_view_scroll -id ${Data.1} -horizontal -set 0
 gui_view_scroll -id ${Hier.1} -vertical -set 0
@@ -344,8 +349,8 @@ gui_view_scroll -id ${Hier.1} -horizontal -set 0
 # Source 'Source.1'
 gui_src_value_annotate -id ${Source.1} -switch false
 gui_set_env TOGGLE::VALUEANNOTATE 0
-gui_open_source -id ${Source.1}  -replace -active CIS_Control_tb /u1/lorenzor/skipper/CIS_Control/CIS_Control_tb.sv
-gui_view_scroll -id ${Source.1} -vertical -set 510
+gui_open_source -id ${Source.1}  -replace -active CIS_Control_tb /u1/lorenzor/skipper_phaseII/CIS_Control/CIS_Control_tb.sv
+gui_view_scroll -id ${Source.1} -vertical -set 855
 gui_src_set_reusable -id ${Source.1}
 
 # View 'Wave.1'
@@ -357,18 +362,12 @@ gui_list_set_height -id Wave -height 25
 set origGroupCreationState [gui_list_create_group_when_add -wave]
 gui_list_create_group_when_add -wave -disable
 gui_marker_set_ref -id ${Wave.1}  C1
-gui_wv_zoom_timerange -id ${Wave.1} 0 275100
-gui_list_add_group -id ${Wave.1} -after {New Group} {dut}
-gui_list_add_group -id ${Wave.1} -after {New Group} {{To CIS}}
-gui_list_select -id ${Wave.1} {CIS_Control_tb.CIS_PDrst CIS_Control_tb.CIS_TG1 CIS_Control_tb.CIS_TG2 CIS_Control_tb.CIS_SG CIS_Control_tb.CIS_OG CIS_Control_tb.CIS_DG }
+gui_wv_zoom_timerange -id ${Wave.1} 0 223619
+gui_list_add_group -id ${Wave.1} -after {New Group} {dut_1}
+gui_list_add_group -id ${Wave.1} -after {New Group} {CIS}
+gui_list_select -id ${Wave.1} {CIS_Control_tb.CIS_PDrst }
 gui_seek_criteria -id ${Wave.1} {Any Edge}
 
-gui_set_color -id ${Wave.1} -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_PDrst}
-gui_set_color -id ${Wave.1} -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_TG1}
-gui_set_color -id ${Wave.1} -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_TG2}
-gui_set_color -id ${Wave.1} -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_SG}
-gui_set_color -id ${Wave.1} -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_OG}
-gui_set_color -id ${Wave.1} -color #8b8b00 -signal {Sim:CIS_Control_tb.CIS_DG}
 
 
 gui_set_env TOGGLE::DEFAULT_WAVE_WINDOW ${Wave.1}
@@ -382,9 +381,9 @@ if { $groupExD } {
 }
 gui_list_set_filter -id ${Wave.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {Parameter 1} {All 1} {Aggregate 1} {LibBaseMember 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {BaseMembers 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
 gui_list_set_filter -id ${Wave.1} -text {*}
-gui_list_set_insertion_bar  -id ${Wave.1} -group {To CIS}  -item CIS_Control_tb.CIS_DG -position below
+gui_list_set_insertion_bar  -id ${Wave.1} -group CIS  -item CIS_Control_tb.CIS_DG -position below
 
-gui_marker_move -id ${Wave.1} {C1} 50764
+gui_marker_move -id ${Wave.1} {C1} 50500
 gui_view_scroll -id ${Wave.1} -vertical -set 0
 gui_show_grid -id ${Wave.1} -enable false
 # Restore toplevel window zorder
