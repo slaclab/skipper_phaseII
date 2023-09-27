@@ -10,17 +10,12 @@
 // Changelog:
 // - Trigger becomes 'integration'. When active high, the CIS integrates signal
 //   in the pinned photodiode. On the falling edge, the pattern is executed.
-
-// Todo:
-// - We need to separate integration and skipping, or we cannot skip > 10 sample.
+// - Separate integration and skipping, or we cannot skip > 10 sample.
 //   Two issues with pattern-based approach: integration->skipping transition,
-//   and RST
-// - Replace skipping signal with NUM_SKIP_SAMPLES input register, max 10k skip
-// - We need to signal FE/ADC when to sample baseline/value
-// --> Add Phi1 and Phi2 to signal when we're sampling baseline and signal
-// - Build a FSM with 3 patterns: CCD_Reset, Integration, Skipping
-// -- Add CLK_DIV register to divide clock and duty-cycle to slow down this part
-
+//   and RST. Implemented three different pattern sequences, controlled by a FSM.
+// - Replaced skipping signal with NUM_SKIP_SAMPLES input register, max 10k skip
+// - Extended patterns to 10 to signal FE/ADC when to sample baseline/value
+// - Added CLK_DIV register to divide clock and duty-cycle to slow down this part
 
 // Notes:
 // Readout sequence is:
@@ -28,7 +23,10 @@
 // 2) Integration (Delayed by N clk cycles after integration)
 // 3) Skipper readout (minimum 1 cycle)
 
-//
+// Important:
+// - CIS_RowRst (pattern[7] in test-bench) needs to be reset at least once
+//   Connect it to reset at top level?
+// - Patterns are executed from MSB to LSB (easier to write/read left->right)
 
 module CIS_Control
   #(
@@ -113,7 +111,13 @@ module CIS_Control
             end
           end
           INTEGRATION: begin
-            if (counter > 0) begin
+            // If integration is high, do nothing
+            if (integration) begin
+              pattern_buffer    <= pattern_buffer;
+              counter           <= counter;
+              state             <= INTEGRATION;
+            // When integration goes low, start the counting process
+            end else if (counter > 0) begin
               pattern_buffer    <= pattern_buffer << 1;
               counter           <= counter-1;
               state             <= INTEGRATION;

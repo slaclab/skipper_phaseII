@@ -7,7 +7,7 @@
 //    TCLK_NS = Clock period in nanoseconds
 
 module CIS_Control_tb #(
-  parameter NUM_SIGNALS=8,
+  parameter NUM_SIGNALS=11,
   parameter PATTERN_LEN=12,
   parameter TCLK_NS=1000,
   parameter SKIP_CYCLES=10,
@@ -52,32 +52,41 @@ module CIS_Control_tb #(
     // 10x20b - Skipping operations (maximum 10)
     // 10b    - End of integration time and transfer charge from PD to SG
 
-    pattern_ccd_reset[0]   = {12'b1111_1111_1111};  // CIS_PDrst
-    pattern_ccd_reset[1]   = {12'b0000_0000_0000};  // CIS_TG1
-    pattern_ccd_reset[2]   = {12'b0000_0000_0000};  // CIS_TG2
-    pattern_ccd_reset[3]   = {12'b1111_1000_0000};  // CIS_SG
-    pattern_ccd_reset[4]   = {12'b0011_1100_0000};  // CIS_OG
-    pattern_ccd_reset[5]   = {12'b0000_1111_0000};  // CIS_DG
-    pattern_ccd_reset[6]   = {12'b0000_0000_1111};  // CIS_FG_RST
-    pattern_ccd_reset[7]   = {12'b1111_1111_1111};  // CIS_RowRst
+    pattern_ccd_reset[0]    = {12'b1111_1111_1111};  // CIS_PDrst
+    pattern_ccd_reset[1]    = {12'b0000_0000_0000};  // CIS_TG1
+    pattern_ccd_reset[2]    = {12'b0000_0000_0000};  // CIS_TG2
+    pattern_ccd_reset[3]    = {12'b1111_1000_0000};  // CIS_SG
+    pattern_ccd_reset[4]    = {12'b0011_1100_0000};  // CIS_OG
+    pattern_ccd_reset[5]    = {12'b0000_1111_0000};  // CIS_DG
+    pattern_ccd_reset[6]    = {12'b0000_0000_1111};  // CIS_FG_RST
+    pattern_ccd_reset[7]    = {12'b0000_0000_0000};  // CIS_RowRst
+    pattern_ccd_reset[8]    = {12'b1000_0000_0000};  // CIS_RowClk
+    pattern_ccd_reset[9]    = {12'b0000_0000_0000};  // SPROCKET_PED
+    pattern_ccd_reset[10]   = {12'b0000_0000_0000};  // SPROCKET_SIG
 
-    pattern_integration[0] = {12'b0000_0000_0000};  // CIS_PDrst
-    pattern_integration[1] = {12'b0000_0011_0000};  // CIS_TG1
-    pattern_integration[2] = {12'b0000_0001_1000};  // CIS_TG2
-    pattern_integration[3] = {12'b0000_0000_1111};  // CIS_SG
-    pattern_integration[4] = {12'b0000_0000_0000};  // CIS_OG
-    pattern_integration[5] = {12'b0000_0000_0000};  // CIS_DG
-    pattern_integration[6] = {12'b0000_0000_0000};  // CIS_FG_RST
-    pattern_integration[7] = {12'b0000_0000_0000};  // CIS_RowRst
+    pattern_integration[0]  = {12'b0000_0000_0011};  // CIS_PDrst
+    pattern_integration[1]  = {12'b0000_0011_0000};  // CIS_TG1
+    pattern_integration[2]  = {12'b0000_0001_1000};  // CIS_TG2
+    pattern_integration[3]  = {12'b0000_0000_1111};  // CIS_SG
+    pattern_integration[4]  = {12'b0000_0000_0000};  // CIS_OG
+    pattern_integration[5]  = {12'b0000_0000_0000};  // CIS_DG
+    pattern_integration[6]  = {12'b0000_0000_0000};  // CIS_FG_RST
+    pattern_integration[7]  = {12'b0000_0000_0000};  // CIS_RowRst
+    pattern_integration[8]  = {12'b0000_0000_0000};  // CIS_RowCLk
+    pattern_integration[9]  = {12'b0000_0000_0000};  // SPROCKET_PED
+    pattern_integration[10] = {12'b0000_0000_0000};  // SPROCKET_SIG
 
-    pattern_skipping[0]    = {12'b0000_0000_0000};  // CIS_PDrst
-    pattern_skipping[1]    = {12'b0000_0000_0000};  // CIS_TG1
-    pattern_skipping[2]    = {12'b0000_0000_0000};  // CIS_TG2
-    pattern_skipping[3]    = {12'b0000_0000_0000};  // CIS_SG
-    pattern_skipping[4]    = {12'b0000_0000_0000};  // CIS_OG
-    pattern_skipping[5]    = {12'b0000_0000_0000};  // CIS_DG
-    pattern_skipping[6]    = {12'b0000_0000_0000};  // CIS_FG_RST
-    pattern_skipping[7]    = {12'b0000_0000_0000};  // CIS_RowRst
+    pattern_skipping[0]     = {12'b1111_1111_1111};  // CIS_PDrst
+    pattern_skipping[1]     = {12'b0000_0000_0000};  // CIS_TG1
+    pattern_skipping[2]     = {12'b0000_0000_0000};  // CIS_TG2
+    pattern_skipping[3]     = {12'b1111_0000_0111};  // CIS_SG
+    pattern_skipping[4]     = {12'b0011_1001_1100};  // CIS_OG
+    pattern_skipping[5]     = {12'b0000_0000_0000};  // CIS_DG
+    pattern_skipping[6]     = {12'b0000_0000_0000};  // CIS_FG_RST
+    pattern_skipping[7]     = {12'b0000_0000_0000};  // CIS_RowRst
+    pattern_skipping[8]     = {12'b0000_0000_0000};  // CIS_RowCLk
+    pattern_skipping[9]     = {12'b0100_0000_0000};  // SPROCKET_PED
+    pattern_skipping[10]    = {12'b0000_0100_0000};  // SPROCKET_SIG
 
     //Begin test
     #100;
@@ -86,7 +95,7 @@ module CIS_Control_tb #(
     integration = 1;
 
     //NOTE: MUST ENSURE THAT TRIGGER PULSE WIDTH IS >> ONE CLOCK PERIOD.
-    #(50*TCLK_NS)
+    #(200*TCLK_NS)
     integration = 0;
     #(CLK_DIVIDER*(SKIP_CYCLES+10)*TCLK_NS*PATTERN_LEN+TCLK_NS*CLK_DIVIDER*100)
     $finish();
