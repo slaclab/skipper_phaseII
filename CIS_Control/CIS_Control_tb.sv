@@ -7,11 +7,12 @@
 //    TCLK_NS = Clock period in nanoseconds
 
 module CIS_Control_tb #(
-  parameter NUM_SIGNALS=11,
+  parameter NUM_SIGNALS=9,
+  parameter PIXEL_CLUSTER_SIZE=16,
   parameter PATTERN_LEN=12,
-  parameter TCLK_NS=1000,
+  parameter TCLK_NS=25,
   parameter SKIP_CYCLES=10,
-  parameter CLK_DIVIDER=4
+  parameter CLK_DIVIDER=0
 ) ();
 
   logic 					clk;
@@ -20,26 +21,28 @@ module CIS_Control_tb #(
   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_ccd_reset;
   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_integration;
   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_skipping;
-  logic [(NUM_SIGNALS-1):0] 			 signal;
   logic 					 running;
+
+  logic cis_PDrst;
+  logic cis_TG1;
+  logic cis_TG2;
+  logic cis_SG;
+  logic cis_OG;
+  logic cis_DG;
+  logic cis_FG_RST;
+  logic cis_RowRst;
+  logic cis_RowClk;
+  logic sprocket_PED;
+  logic sprocket_SIG;
+
+  logic global_shutter = 1'b1;
 
   logic  [9:0]     clk_div = CLK_DIVIDER;
   logic  [9:0]     skip_samples = SKIP_CYCLES;
 
-  // Map signals to CIS names
-  logic CIS_PDrst, CIS_TG1, CIS_TG2, CIS_SG, CIS_OG, CIS_DG;
-
-  assign CIS_PDrst  = signal[0];
-  assign CIS_TG1    = signal[1];
-  assign CIS_TG2    = signal[2];
-  assign CIS_SG     = signal[3];
-  assign CIS_OG     = signal[4];
-  assign CIS_DG     = signal[5];
-  assign CIS_FG_RST = signal[6];
-
   always #(TCLK_NS/2) clk <= !clk;
 
-  CIS_Control #(NUM_SIGNALS,PATTERN_LEN) dut (.*);
+  CIS_Control #(NUM_SIGNALS,PIXEL_CLUSTER_SIZE,PATTERN_LEN) dut (.*);
 
   initial begin
 
@@ -59,10 +62,8 @@ module CIS_Control_tb #(
     pattern_ccd_reset[4]    = {12'b0011_1100_0000};  // CIS_OG
     pattern_ccd_reset[5]    = {12'b0000_1111_0000};  // CIS_DG
     pattern_ccd_reset[6]    = {12'b0000_0000_1111};  // CIS_FG_RST
-    pattern_ccd_reset[7]    = {12'b0000_0000_0000};  // CIS_RowRst
-    pattern_ccd_reset[8]    = {12'b1000_0000_0000};  // CIS_RowClk
-    pattern_ccd_reset[9]    = {12'b0000_0000_0000};  // SPROCKET_PED
-    pattern_ccd_reset[10]   = {12'b0000_0000_0000};  // SPROCKET_SIG
+    pattern_ccd_reset[7]    = {12'b0000_0000_0000};  // SPROCKET_PED
+    pattern_ccd_reset[8]    = {12'b0000_0000_0000};  // SPROCKET_SIG
 
     pattern_integration[0]  = {12'b0000_0000_0011};  // CIS_PDrst
     pattern_integration[1]  = {12'b0000_0011_0000};  // CIS_TG1
@@ -71,10 +72,8 @@ module CIS_Control_tb #(
     pattern_integration[4]  = {12'b0000_0000_0000};  // CIS_OG
     pattern_integration[5]  = {12'b0000_0000_0000};  // CIS_DG
     pattern_integration[6]  = {12'b0000_0000_0000};  // CIS_FG_RST
-    pattern_integration[7]  = {12'b0000_0000_0000};  // CIS_RowRst
-    pattern_integration[8]  = {12'b0000_0000_0000};  // CIS_RowCLk
-    pattern_integration[9]  = {12'b0000_0000_0000};  // SPROCKET_PED
-    pattern_integration[10] = {12'b0000_0000_0000};  // SPROCKET_SIG
+    pattern_integration[7]  = {12'b0000_0000_0000};  // SPROCKET_PED
+    pattern_integration[8]  = {12'b0000_0000_0000};  // SPROCKET_SIG
 
     pattern_skipping[0]     = {12'b1111_1111_1111};  // CIS_PDrst
     pattern_skipping[1]     = {12'b0000_0000_0000};  // CIS_TG1
@@ -83,21 +82,19 @@ module CIS_Control_tb #(
     pattern_skipping[4]     = {12'b0011_1001_1100};  // CIS_OG
     pattern_skipping[5]     = {12'b0000_0000_0000};  // CIS_DG
     pattern_skipping[6]     = {12'b0000_0000_0000};  // CIS_FG_RST
-    pattern_skipping[7]     = {12'b0000_0000_0000};  // CIS_RowRst
-    pattern_skipping[8]     = {12'b0000_0000_0000};  // CIS_RowCLk
-    pattern_skipping[9]     = {12'b0100_0000_0000};  // SPROCKET_PED
-    pattern_skipping[10]    = {12'b0000_0100_0000};  // SPROCKET_SIG
+    pattern_skipping[7]     = {12'b0100_0000_0000};  // SPROCKET_PED
+    pattern_skipping[8]     = {12'b0000_0100_0000};  // SPROCKET_SIG
 
     //Begin test
-    #100;
+    #(10*TCLK_NS);
     reset = 0;
-    #5000;
+    #(50*TCLK_NS);
     integration = 1;
 
     //NOTE: MUST ENSURE THAT TRIGGER PULSE WIDTH IS >> ONE CLOCK PERIOD.
-    #(200*TCLK_NS)
+    #(10*TCLK_NS)
     integration = 0;
-    #(CLK_DIVIDER*(SKIP_CYCLES+10)*TCLK_NS*PATTERN_LEN+TCLK_NS*CLK_DIVIDER*100)
+    #((CLK_DIVIDER+1)*(SKIP_CYCLES+10)*PIXEL_CLUSTER_SIZE*TCLK_NS*PATTERN_LEN+TCLK_NS*(CLK_DIVIDER+1)*100)
     $finish();
   end
 

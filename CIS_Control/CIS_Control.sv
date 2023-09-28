@@ -16,6 +16,8 @@
 // - Replaced skipping signal with NUM_SKIP_SAMPLES input register, max 10k skip
 // - Extended patterns to 10 to signal FE/ADC when to sample baseline/value
 // - Added CLK_DIV register to divide clock and duty-cycle to slow down this part
+// - Added global_shutter mode
+// - Ports are now named in CIS_Control
 
 // Notes:
 // Readout sequence is:
@@ -30,18 +32,33 @@
 
 module CIS_Control
   #(
-  parameter     NUM_SIGNALS = 10,
-  parameter     PATTERN_LEN = 12
+  parameter     NUM_SIGNALS         = 9,
+  parameter     PIXEL_CLUSTER_SIZE  = 16,
+  parameter     PATTERN_LEN         = 12
   ) (
   input   logic 					                              clk,
   input   logic 					                              reset,
   input   logic [9:0]                                   clk_div,
+  input   logic                                         global_shutter,
   input   logic 					                              integration,
   input   logic [9:0]                                   skip_samples,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_ccd_reset,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_integration,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_skipping,
-  output  logic [(NUM_SIGNALS-1):0] 			              signal
+  // Outputs to CIS pixel
+  output  logic                                         cis_PDrst,
+  output  logic                                         cis_TG1,
+  output  logic                                         cis_TG2,
+  output  logic                                         cis_SG,
+  output  logic                                         cis_DG,
+  output  logic                                         cis_OG,
+  output  logic                                         cis_FG_RST,
+  // Outputs to CIS pixel selection logic
+  output  logic                                         cis_RowRst,
+  output  logic                                         cis_RowClk,
+  // Outputs to SPROCKET
+  output  logic                                         sprocket_SIG,
+  output  logic                                         sprocket_PED
   );
 
 
@@ -77,11 +94,17 @@ module CIS_Control
   logic last_inte;      //Value of trig last clk cycle.
   logic [15:0] 					counter;
   logic [15:0] 					counter_skipping;
+
+  logic [3:0] 					counter_pixel;
+
   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] 	pattern_buffer;
   genvar i;
 
   always_ff @(posedge clk, posedge reset) begin
     if (reset) begin
+      cis_RowRst        <= 1'b1;
+      counter_pixel     <= 4'd0;
+      cis_RowClk        <= 1'b0;
       state             <= IDLE;
       pattern_buffer    <= pattern_ccd_reset;
       counter           <= 0;
@@ -91,6 +114,9 @@ module CIS_Control
       if (clk_div_en) begin
         case (state)
           IDLE: begin
+            cis_RowClk     <= 1'b0;
+            cis_RowRst     <= 1'b0;
+            counter_pixel  <= 4'd0;
             pattern_buffer <= pattern_ccd_reset;
             counter        <= PATTERN_LEN-1;
             if (integration) begin
@@ -140,12 +166,25 @@ module CIS_Control
                 counter           <= PATTERN_LEN-1;
                 state             <= SKIPPING;
                 counter_skipping  <= counter_skipping-1;
+                cis_RowClk        <= 1'b0;
               end else begin
-                // At the end of the sequence, return in ccd_reset state
-                pattern_buffer    <= pattern_ccd_reset;
-                counter           <= 0;
-                state             <= IDLE;
-                counter_skipping  <= 0;
+                // If global_shutter mode is enabled, we repeat skipping sequence
+                // only, without going through integration and CCD reset
+                if (global_shutter && (counter_pixel < (PIXEL_CLUSTER_SIZE-1))) begin
+                  counter_pixel     <= counter_pixel + 1;
+                  pattern_buffer    <= pattern_skipping;
+                  counter           <= PATTERN_LEN-1;
+                  state             <= SKIPPING;
+                  counter_skipping  <= skip_samples;
+                  cis_RowClk        <= 1'b1;
+                end else begin
+                  // At the end of the sequence, return in ccd_reset state
+                  pattern_buffer    <= pattern_ccd_reset;
+                  counter           <= 0;
+                  state             <= IDLE;
+                  counter_skipping  <= 0;
+                  cis_RowClk        <= 1'b1;
+                end
               end
             end
           end
@@ -154,11 +193,16 @@ module CIS_Control
     end // if !(reset )
   end
 
-  // Assign only signals from 1 to NUM_SIGNALS
-  generate
-    for(i = 0; i < NUM_SIGNALS; i++) begin
-      assign signal[i] = pattern_buffer[i][PATTERN_LEN-1];
-    end
-  endgenerate
+  assign cis_PDrst    = pattern_buffer[0][PATTERN_LEN-1];
+  assign cis_TG1      = pattern_buffer[1][PATTERN_LEN-1];
+  assign cis_TG2      = pattern_buffer[2][PATTERN_LEN-1];
+  assign cis_SG       = pattern_buffer[3][PATTERN_LEN-1];
+  assign cis_OG       = pattern_buffer[4][PATTERN_LEN-1];
+  assign cis_DG       = pattern_buffer[5][PATTERN_LEN-1];
+  assign cis_FG_RST   = pattern_buffer[6][PATTERN_LEN-1];
+  assign sprocket_PED = pattern_buffer[7][PATTERN_LEN-1];
+  assign sprocket_SIG = pattern_buffer[8][PATTERN_LEN-1];
+
+
 
 endmodule // CIS_Control
