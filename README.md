@@ -67,6 +67,7 @@ The FSM transitions between these states based on the selected operation mode (r
 The module uses a `pattern_buffer` to store the current pattern. 
 The pattern is shifted and modified based on the state of the FSM. 
 The output control signals are assigned based on specific bits of the `pattern_buffer` corresponding to various control signals.
+NOTE: pattern is generated from MSB to LSB! (for simplicity of writing patterns in a text editor, so that sequence is read left to right)
 
 Mapping of pattern array to signals is the following:
 - pattern_*[0] = CIS_PDrst
