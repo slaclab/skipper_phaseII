@@ -57,8 +57,8 @@ module CIS_Control
   output  logic                                         cis_RowRst,
   output  logic                                         cis_RowClk,
   // Outputs to SPROCKET
-  output  logic                                         sprocket_SIG,
-  output  logic                                         sprocket_PED
+  output  logic                                         sprocket_phi1,
+  output  logic                                         sprocket_phi2
   );
 
 
@@ -127,7 +127,7 @@ module CIS_Control
           end
           CCD_RESET: begin
             if (counter > 0) begin
-              pattern_buffer    <= pattern_buffer << 1;
+              pattern_buffer    <= pattern_buffer >> 1;
               counter           <= counter-1;
               state             <= CCD_RESET;
             end else begin
@@ -144,7 +144,7 @@ module CIS_Control
               state             <= INTEGRATION;
             // When integration goes low, start the counting process
             end else if (counter > 0) begin
-              pattern_buffer    <= pattern_buffer << 1;
+              pattern_buffer    <= pattern_buffer >> 1;
               counter           <= counter-1;
               state             <= INTEGRATION;
             end else begin
@@ -156,12 +156,13 @@ module CIS_Control
           end
           SKIPPING: begin
             if (counter > 0) begin
-              pattern_buffer    <= pattern_buffer << 1;
+              pattern_buffer    <= pattern_buffer >> 1;
               counter           <= counter-1;
               state             <= SKIPPING;
             end else begin
               // Repeat pattern 'skip_samples' times
-              if (counter_skipping > 0) begin
+			  // when counter_skipping = 1, it's the last cycle.
+              if (counter_skipping > 1) begin
                 pattern_buffer    <= pattern_skipping;
                 counter           <= PATTERN_LEN-1;
                 state             <= SKIPPING;
@@ -193,15 +194,15 @@ module CIS_Control
     end // if !(reset )
   end
 
-  assign cis_PDrst    = pattern_buffer[0][PATTERN_LEN-1];
-  assign cis_TG1      = pattern_buffer[1][PATTERN_LEN-1];
-  assign cis_TG2      = pattern_buffer[2][PATTERN_LEN-1];
-  assign cis_SG       = pattern_buffer[3][PATTERN_LEN-1];
-  assign cis_OG       = pattern_buffer[4][PATTERN_LEN-1];
-  assign cis_DG       = pattern_buffer[5][PATTERN_LEN-1];
-  assign cis_FG_RST   = pattern_buffer[6][PATTERN_LEN-1];
-  assign sprocket_PED = pattern_buffer[7][PATTERN_LEN-1];
-  assign sprocket_SIG = pattern_buffer[8][PATTERN_LEN-1];
+  assign cis_PDrst    = pattern_buffer[0][0];
+  assign cis_TG1      = pattern_buffer[1][0];
+  assign cis_TG2      = pattern_buffer[2][0];
+  assign cis_SG       = pattern_buffer[3][0];
+  assign cis_OG       = pattern_buffer[4][0];
+  assign cis_DG       = pattern_buffer[5][0];
+  assign cis_FG_RST   = pattern_buffer[6][0];
+  assign sprocket_phi1 = pattern_buffer[7][0];
+  assign sprocket_phi2 = pattern_buffer[8][0];
 
 
 
