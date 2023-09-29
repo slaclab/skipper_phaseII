@@ -82,7 +82,9 @@ Mapping of pattern array to signals is the following:
 
 ### 7. Shutter: global vs rolling<a name="shutter"></a>
 - Rolling shutter: the three FSM states are executed sequentially, then we switch to next pixel (need a new integration pulse).
+![Rolling shutter timing diagram](RollingShutter.png)
+  
 - Global shutter: `CCD_RESET` and `INTEGRATION` are executed in parallel for all pixels, then skipping phase is repeated for each pixel (only one integration pulse is required). 
----
+![Global shutter timing diagram](GlobalShutter.png)
 
 Contact: Lorenzo Rota - SLAC, lorenzor@slac.stanford.edu
