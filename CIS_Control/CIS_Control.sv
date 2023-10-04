@@ -42,6 +42,7 @@ module CIS_Control
   input   logic                                         global_shutter,
   input   logic 					                              integration,
   input   logic [9:0]                                   skip_samples,
+  input   logic 					                              sprocket_eoc,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_ccd_reset,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_integration,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_skipping,
@@ -155,13 +156,14 @@ module CIS_Control
             end
           end
           SKIPPING: begin
+            // Here we are doing the SKIPPING
             if (counter > 0) begin
               pattern_buffer    <= pattern_buffer >> 1;
               counter           <= counter-1;
               state             <= SKIPPING;
             end else begin
               // Repeat pattern 'skip_samples' times
-			  // when counter_skipping = 1, it's the last cycle.
+			        // when counter_skipping = 1, it's the last cycle.
               if (counter_skipping > 1) begin
                 pattern_buffer    <= pattern_skipping;
                 counter           <= PATTERN_LEN-1;
@@ -172,12 +174,22 @@ module CIS_Control
                 // If global_shutter mode is enabled, we repeat skipping sequence
                 // only, without going through integration and CCD reset
                 if (global_shutter && (counter_pixel < (PIXEL_CLUSTER_SIZE-1))) begin
-                  counter_pixel     <= counter_pixel + 1;
-                  pattern_buffer    <= pattern_skipping;
-                  counter           <= PATTERN_LEN-1;
-                  state             <= SKIPPING;
-                  counter_skipping  <= skip_samples;
-                  cis_RowClk        <= 1'b1;
+                  // We wait for End of Conversion in SPROCKET
+                  if (sprocket_eoc) begin
+                    counter_pixel     <= counter_pixel + 1;
+                    pattern_buffer    <= pattern_skipping;
+                    counter           <= PATTERN_LEN-1;
+                    state             <= SKIPPING;
+                    counter_skipping  <= skip_samples;
+                    cis_RowClk        <= 1'b1;
+                  end else begin // otherwise just keep current state
+                    counter_pixel     <= counter_pixel;
+                    pattern_buffer    <= pattern_buffer;
+                    counter           <= counter;
+                    state             <= state;
+                    counter_skipping  <= counter_skipping;
+                    cis_RowClk        <= cis_RowClk;
+                  end
                 end else begin
                   // At the end of the sequence, return in ccd_reset state
                   pattern_buffer    <= pattern_ccd_reset;

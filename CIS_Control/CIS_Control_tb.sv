@@ -32,8 +32,9 @@ module CIS_Control_tb #(
   logic cis_FG_RST;
   logic cis_RowRst;
   logic cis_RowClk;
-  logic sprocket_PED;
-  logic sprocket_SIG;
+  logic sprocket_phi1;
+  logic sprocket_phi2;
+  logic sprocket_eoc;
 
   logic global_shutter = 1'b1;
 
@@ -49,6 +50,7 @@ module CIS_Control_tb #(
     clk = 0;
     integration = 0;
     reset = 1;
+    sprocket_eoc = 0;
 
     // Note: Pattern here are read right to left, LSB is first
     // Tentatively organized as follows:
@@ -103,5 +105,8 @@ module CIS_Control_tb #(
     $dumpfile("DB.vcd");
     $dumpvars(0,CIS_Control_tb);
   end
+
+  always #(TCLK_NS*200) sprocket_eoc <= !sprocket_eoc;
+
 
 endmodule // CIS_Control_tb
