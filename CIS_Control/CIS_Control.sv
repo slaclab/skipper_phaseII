@@ -41,8 +41,7 @@ module CIS_Control
   input   logic [9:0]                                   clk_div,
   input   logic                                         global_shutter,
   input   logic 					                              integration,
-  input   logic [9:0]                                   skip_samples,
-  input   logic 					                              sprocket_eoc,
+  input   logic [15:0]                                  skip_samples,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_ccd_reset,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_integration,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_skipping,
@@ -170,12 +169,14 @@ module CIS_Control
                 state             <= SKIPPING;
                 counter_skipping  <= counter_skipping-1;
                 cis_RowClk        <= 1'b0;
+				//Set this up to be ready for the next transition.
+				last_inte         <= 1'b0;
               end else begin
                 // If global_shutter mode is enabled, we repeat skipping sequence
                 // only, without going through integration and CCD reset
                 if (global_shutter && (counter_pixel < (PIXEL_CLUSTER_SIZE-1))) begin
                   // We wait for End of Conversion in SPROCKET
-                  if (sprocket_eoc) begin
+                  if (!integration && last_inte) begin
                     counter_pixel     <= counter_pixel + 1;
                     pattern_buffer    <= pattern_skipping;
                     counter           <= PATTERN_LEN-1;
@@ -189,6 +190,7 @@ module CIS_Control
                     state             <= state;
                     counter_skipping  <= counter_skipping;
                     cis_RowClk        <= cis_RowClk;
+					last_inte         <= integration;
                   end
                 end else begin
                   // At the end of the sequence, return in ccd_reset state
