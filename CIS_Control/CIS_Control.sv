@@ -41,7 +41,7 @@ module CIS_Control
   input   logic [9:0]                                   clk_div,
   input   logic                                         global_shutter,
   input   logic 					                              integration,
-  input   logic [9:0]                                   skip_samples,
+  input   logic [15:0]                                  skip_samples,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_ccd_reset,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_integration,
   input   logic [(NUM_SIGNALS-1):0] [(PATTERN_LEN-1):0] pattern_skipping,
